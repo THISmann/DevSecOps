@@ -1,4 +1,1 @@
 # devopsLab
-# DevOpsLab
-# LabDevSecOps
-# devopsLab
