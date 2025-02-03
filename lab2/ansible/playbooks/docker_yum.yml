@@ -1,0 +1,65 @@
+---
+- name: Install and configure Docker on a yum-based system
+  hosts: all
+  become: yes
+  vars:
+    docker_user: "ansible"  # Replace with the user to add to the docker group
+
+  tasks:
+    - name: Remove conflicting packages (podman and runc)
+      yum:
+        name:
+          - podman
+          - runc
+        state: absent
+
+    - name: Disable container-tools module
+      command: yum module disable -y container-tools
+      when: ansible_distribution_major_version == "8"
+
+    - name: Install required packages for Docker
+      yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+
+    - name: Add Docker repository
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Repository
+        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+        enabled: yes
+
+    - name: Install containerd.io
+      yum:
+        name: containerd.io
+        state: present
+
+    - name: Install Docker
+      yum:
+        name: docker-ce
+        state: present
+
+    - name: Start and enable Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
+      user:
+        name: "{{ docker_user }}"
+        groups: docker
+        append: yes
+
+    - name: Ensure Docker is running
+      command: docker --version
+      register: docker_version_output
+
+    - name: Display Docker version
+      debug:
+        msg: "{{ docker_version_output.stdout }}"
