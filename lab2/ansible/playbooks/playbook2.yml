@@ -1,0 +1,17 @@
+- name: Installer des applications essentielles
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Mettre à jour le cache APT
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Installer Vim, Curl et Git
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - vim
+        - curl
+        - git

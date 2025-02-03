@@ -1,0 +1,15 @@
+- name: Configure firewall rules
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Bloquer tous les ports sauf SSH, HTTP, HTTPS
+      ansible.builtin.iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ item }}"
+        jump: ACCEPT
+      loop:
+        - 22
+        - 80
+        - 443

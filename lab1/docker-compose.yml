@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  container-a:
+    build:
+      context: .
+      dockerfile: Dockerfile-A
+    ports:
+      - "7070:80"
+    volumes:
+      - ./container-a:/usr/share/nginx/html
+
+  container-b:
+    build:
+      context: .
+      dockerfile: Dockerfile-B
+    ports:
+      - "9090:80"
+    volumes:
+      - ./container-b:/usr/share/nginx/html
+
+  loadbalancer:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - container-a
+      - container-b

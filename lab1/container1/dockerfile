@@ -1,0 +1,3 @@
+# Dockerfile-A
+FROM nginx:latest
+COPY ./container-a/index.html /usr/share/nginx/html/index.html

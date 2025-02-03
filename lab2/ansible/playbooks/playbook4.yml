@@ -1,0 +1,17 @@
+- name: Gestion des utilisateurs
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Créer un utilisateur
+      ansible.builtin.user:
+        name: devuser
+        groups: sudo
+        append: yes
+
+    - name: Changer les permissions
+      ansible.builtin.file:
+        path: /home/devuser
+        owner: devuser
+        group: devuser
+        mode: '0755'

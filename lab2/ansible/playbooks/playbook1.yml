@@ -1,0 +1,22 @@
+- name: Installer et configurer Docker
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Installer Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: Démarrer Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Exécuter un container Nginx
+      community.docker.docker_container:
+        name: my_nginx
+        image: nginx
+        state: started
+        restart_policy: always
