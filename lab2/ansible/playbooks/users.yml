@@ -1,15 +1,15 @@
-- name: Gestion des utilisateurs
+- name: Users management
   hosts: all
   become: yes
 
   tasks:
-    - name: Créer un utilisateur
+    - name: create users
       ansible.builtin.user:
         name: devuser
         groups: sudo
         append: yes
 
-    - name: Changer les permissions
+    - name: change permissions on /home/devuser
       ansible.builtin.file:
         path: /home/devuser
         owner: devuser
