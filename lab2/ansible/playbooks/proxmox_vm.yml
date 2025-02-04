@@ -1,0 +1,59 @@
+- name: Create Fedora IoT VM on Proxmox
+  hosts: localhost
+  gather_facts: no
+  become: no
+  vars:
+    ansible_python_interpreter: ~/myenv/bin/python3
+    proxmox_api_host: "10.90.123.200"
+    proxmox_api_user: "root@pam"
+    proxmox_api_password: "INNOfuh#"
+    proxmox_api_token_id: "root@pam!etienne"
+    proxmox_api_token_secret: "5b566271-ff77-41a5-9618-f94d98e30ff3"
+    proxmox_node: "innopolis"
+    vm_id: 200
+    vm_name: "fedora-iot"
+    vm_memory: 4096
+    vm_cores: 2
+    vm_storage: "local-lvm"
+    vm_disk_size: "30"
+    vm_bridge1: "vmbr1"
+    vm_bridge2: "vmbr2"
+    vm_iso: "local:iso/Fedora-IoT-ostree-41-20241027.0.x86_64.iso"
+    
+
+  tasks:
+    - name: Create a new VM
+      community.general.proxmox_kvm:    
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        api_host: "{{ proxmox_api_host }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ vm_id }}"
+        name: "{{ vm_name }}"
+        memory: "{{ vm_memory }}"
+        cores: "{{ vm_cores }}"
+        cpu: "host"
+        storage: "{{ vm_storage }}"
+        scsihw: "virtio-scsi-pci"
+        scsi:
+          scsi0: "{{ vm_storage }}:{{ vm_disk_size }}"
+        boot: "order=ide2"
+        ide:
+          ide2: "local:iso/Fedora-IoT-ostree-41-20241027.0.x86_64.iso,media=cdrom"
+        net:
+          net0: "virtio,bridge={{ vm_bridge1 }},rate=200"
+          net1: "e1000,bridge={{ vm_bridge2 }}"
+        agent: 1
+        autostart: true
+        state: present
+        timeout: 30
+
+    - name: Start the VM
+      community.general.proxmox_kvm:
+        api_user: "{{ proxmox_api_user }}"
+        api_password: "{{ proxmox_api_password }}"
+        api_host: "{{ proxmox_api_host }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ vm_id }}"
+        state: started
+        timeout: 30
