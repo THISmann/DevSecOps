@@ -1,10 +1,11 @@
-- name: Install and configure WordPress stack
+---
+- name: Install Nginx for WordPress
   import_tasks: install_nginx.yml
 
-- name: Install PHP-FPM and required modules
+- name: Install PHP-FPM and required modules for WordPress
   import_tasks: install_php.yml
 
-- name: Install and configure MariaDB
+- name: Install and configure MariaDB for WordPress
   import_tasks: install_mariadb.yml
 
 - name: Configure and deploy WordPress

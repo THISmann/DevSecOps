@@ -1,7 +1,8 @@
 - name: Setup Web Servers with WordPress
   hosts: webservers
   become: yes
+
   roles:
-    - role: ntp
-    - role: apache
-    - role: wordpress
+    - ntp
+    - apache
+    - wordpress

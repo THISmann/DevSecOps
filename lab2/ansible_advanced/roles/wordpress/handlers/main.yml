@@ -1,7 +1,7 @@
 - name: Restart Nginx
   service:
     name: nginx
-    state: restarted
+    state: reloaded
 
 - name: Restart PHP-FPM
   service:

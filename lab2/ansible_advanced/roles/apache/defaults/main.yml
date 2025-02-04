@@ -1,0 +1,14 @@
+---
+# Default Apache configuration variables
+
+# Document root for your website
+apache_document_root: /var/www/html
+
+# Directory for Apache log files
+apache_log_dir: /var/log/apache2
+
+# Administrator email address
+apache_server_admin: webmaster@localhost
+
+# (Optional) Any extra configuration you want to include
+apache_extra_config: ""

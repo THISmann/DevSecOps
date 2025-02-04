@@ -4,14 +4,20 @@ server {
     root {{ nginx_root }};
     index index.php index.html index.htm;
 
+    access_log /var/log/nginx/wordpress_access.log;
+    error_log /var/log/nginx/wordpress_error.log;
+
     location / {
         try_files $uri $uri/ /index.php?$args;
     }
 
     location ~ \.php$ {
-        include fastcgi_params;
-        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include snippets/fastcgi-php.conf;
+        # Adjust the PHP-FPM socket path if necessary:
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+    }
+
+    location ~ /\.ht {
+        deny all;
     }
 }

@@ -1,15 +1,40 @@
+---
 - name: Install Nginx
   package:
     name: nginx
     state: present
 
-- name: Deploy Nginx configuration
+- name: Ensure Nginx document root exists
+  file:
+    path: "{{ nginx_root }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Deploy Nginx configuration file for WordPress
   template:
     src: nginx.conf.j2
-    dest: /etc/nginx/sites-available/wordpress
-  notify: Restart Nginx
+    dest: /etc/nginx/sites-available/wordpress.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload Nginx
 
-- name: Enable Nginx
+- name: Enable WordPress site configuration in Nginx
+  file:
+    src: /etc/nginx/sites-available/wordpress.conf
+    dest: /etc/nginx/sites-enabled/wordpress.conf
+    state: link
+    force: yes
+
+- name: Test Nginx configuration syntax
+  command: nginx -t
+  register: nginx_config_test
+  changed_when: false
+  failed_when: nginx_config_test.rc != 0
+
+- name: Ensure Nginx service is started and enabled
   service:
     name: nginx
     state: started
