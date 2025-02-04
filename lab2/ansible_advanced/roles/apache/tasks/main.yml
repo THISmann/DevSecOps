@@ -1,0 +1,16 @@
+- name: Install Apache Web Server
+  package:
+    name: apache2
+    state: present
+
+- name: Deploy Apache Configuration
+  template:
+    src: httpd.conf.j2
+    dest: /etc/httpd/httpd.conf
+  notify: Restart Apache
+
+- name: Enable and Start Apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes

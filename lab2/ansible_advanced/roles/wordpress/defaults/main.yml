@@ -1,0 +1,5 @@
+wordpress_db_name: wordpress
+wordpress_db_user: wordpress
+wordpress_db_password: "securepassword"
+wordpress_url: "http://{{ ansible_host }}"
+nginx_root: "/var/www/wordpress"

@@ -1,0 +1,23 @@
+- name: Install PHP and dependencies
+  package:
+    name:
+      - php
+      - php-fpm
+      - php-mysql
+      - php-curl
+      - php-xml
+      - php-mbstring
+      - php-gd
+    state: present
+
+- name: Configure PHP settings
+  template:
+    src: php.ini.j2
+    dest: /etc/php/7.4/fpm/php.ini
+  notify: Restart PHP-FPM
+
+- name: Enable PHP-FPM
+  service:
+    name: php7.4-fpm
+    state: started
+    enabled: yes
