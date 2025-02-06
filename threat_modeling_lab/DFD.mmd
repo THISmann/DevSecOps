@@ -1,0 +1,44 @@
+flowchart TD
+    classDef external fill:#f96,stroke:#333,stroke-width:2px,color:#000
+    classDef process fill:#9cf,stroke:#333,stroke-width:2px,color:#000
+    classDef storage fill:#fcf,stroke:#333,stroke-width:2px,color:#000
+
+    subgraph External["External Entities"]
+        User[User]:::external
+    end
+
+    subgraph APIs["API Layer"]
+        UploadAPI[Video Upload API]:::process
+        StreamAPI[Video Stream API]:::process
+        SearchAPI[Search API]:::process
+    end
+
+    subgraph Servers["Server Layer"]
+        AppServer[Application Server]:::process
+        UploadServer[Video Uploading Server]:::process
+        Queue[Video Processing Queue]:::process
+    end
+
+    subgraph Storage["Storage Layer"]
+        DB[(Database)]:::storage
+        Store[(Video Object Store)]:::storage
+    end
+
+    User -->|"Upload Video"| UploadAPI
+    User -->|"Stream Request"| StreamAPI
+    User -->|"Search Query"| SearchAPI
+
+    UploadAPI -->|"Process Video"| UploadServer
+    UploadServer -->|"Queue"| Queue
+    Queue -->|"Store"| Store
+    Queue -->|"Save Metadata"| DB
+
+    StreamAPI -->|"Request"| AppServer
+    AppServer -->|"Fetch Metadata"| DB
+    AppServer -->|"Fetch Video"| Store
+    AppServer -->|"Stream"| User
+
+    SearchAPI -->|"Query"| AppServer
+    AppServer -->|"Search"| DB
+    DB -->|"Results"| AppServer
+    AppServer -->|"Return Results"| User

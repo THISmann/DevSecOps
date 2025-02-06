@@ -1,0 +1,15 @@
+flowchart TD
+    classDef external fill:#f96,stroke:#333,stroke-width:2px,color:#000
+    classDef process fill:#9cf,stroke:#333,stroke-width:2px,color:#000
+    classDef storage fill:#fcf,stroke:#333,stroke-width:2px,color:#000
+    
+    User[User]:::external
+    SearchAPI[Search API]:::process
+    AppServer[Application Server]:::process
+    DB[(Database)]:::storage
+    
+    User -->|"Search Query"| SearchAPI
+    SearchAPI -->|"Query"| AppServer
+    AppServer -->|"Search"| DB
+    DB -->|"Results"| AppServer
+    AppServer -->|"Return Results"| User

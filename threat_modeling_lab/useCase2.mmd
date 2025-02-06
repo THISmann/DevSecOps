@@ -1,0 +1,16 @@
+flowchart TD
+    classDef external fill:#f96,stroke:#333,stroke-width:2px,color:#000
+    classDef process fill:#9cf,stroke:#333,stroke-width:2px,color:#000
+    classDef storage fill:#fcf,stroke:#333,stroke-width:2px,color:#000
+    
+    User[User]:::external
+    StreamAPI[Video Stream API]:::process
+    AppServer[Application Server]:::process
+    DB[(Database)]:::storage
+    Store[(Video Object Store)]:::storage
+    
+    User -->|"Stream Request"| StreamAPI
+    StreamAPI -->|"Request"| AppServer
+    AppServer -->|"Fetch Metadata"| DB
+    AppServer -->|"Fetch Video"| Store
+    AppServer -->|"Stream"| User

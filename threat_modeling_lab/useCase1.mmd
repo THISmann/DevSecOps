@@ -1,0 +1,17 @@
+flowchart TD
+    classDef external fill:#f96,stroke:#333,stroke-width:2px,color:#000
+    classDef process fill:#9cf,stroke:#333,stroke-width:2px,color:#000
+    classDef storage fill:#fcf,stroke:#333,stroke-width:2px,color:#000
+    
+    User[User]:::external
+    UploadAPI[Video Upload API]:::process
+    UploadServer[Video Uploading Server]:::process
+    Queue[Video Processing Queue]:::process
+    Store[(Video Object Store)]:::storage
+    DB[(Database)]:::storage
+    
+    User -->|"Upload Video File"| UploadAPI
+    UploadAPI -->|"Forward Video"| UploadServer
+    UploadServer -->|"Queue Processing"| Queue
+    Queue -->|"Store Processed Video"| Store
+    Queue -->|"Save Metadata"| DB
