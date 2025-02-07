@@ -1,6 +1,4 @@
-![alt text](image.png)
-
-### **Threat Modeling for a YouTube-like Application**
+**Threat Modeling for a YouTube-like Application**
 
 ---
 
