@@ -39,3 +39,6 @@ sudo gitlab-runner start
 ![alt text](image-3.png)
 
 ![alt text](image-4.png)
+
+pip3 freeze > requirements.txt
+![alt text](image-5.png)
