@@ -1,0 +1,42 @@
+stages:
+  - build
+  - test
+  - dockerize
+  - deploy
+
+build:
+  stage: build
+  script:
+    - echo "Building application..."
+  tags:
+    - st23-runner
+
+test:
+  stage: test
+  script:
+    - echo "Running tests..."
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - python -m unittest discover
+  tags:
+    - st23-runner
+
+dockerize:
+  stage: dockerize
+  script:
+    - echo "Building Docker image..."
+    - docker build -t thismann/st23-repo .
+    - echo $DOCKER_PASSWORD | docker login -u thismann17 --password-stdin
+    - docker push thismann/st23-repo
+  tags:
+    - st23-runner
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploying application..."
+    - ssh etienne@10.90.122.235 "docker pull thismann17/st23-repo"
+    - ssh etienne@10.90.122.235 "docker run -d -p 5000:5000 thismann17/st23-repo"
+  tags:
+    - st23-runner

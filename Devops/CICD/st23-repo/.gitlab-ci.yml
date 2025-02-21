@@ -1,0 +1,84 @@
+stages:
+  - build
+  - test
+  - dockerize
+  - deploy
+
+variables:
+  ANSIBLE_HOST: "10.90.122.235"
+  ANSIBLE_USER: "etienne"
+  DOCKER_IMAGE: "thismann17/st23-repo"
+
+default:
+  tags:
+    - st23-runner
+  cache:
+    key: dependencies
+    paths:
+      - venv/
+    policy: pull-push
+
+# ✅ Build Stage
+build:
+  stage: build
+  script:
+    - echo "Building application..."
+  artifacts:
+    paths:
+      - build_output/
+    expire_in: 1 hour
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"'
+
+# ✅ Test Stage
+test:
+  stage: test
+  needs:
+    - build
+  script:
+    - echo "Running tests..."
+    - python3 -m venv venv || exit 1
+    - source venv/bin/activate || exit 1
+    - pip install -r requirements.txt || exit 1
+    - python -m unittest discover -s tests -p "test_*.py" || exit 1
+  artifacts:
+    paths:
+      - tests/
+    expire_in: 1 hour
+  dependencies:
+    - build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"'
+
+# ✅ Dockerize Stage
+dockerize:
+  stage: dockerize
+  needs:
+    - test
+  script:
+    - echo "Building Docker image..."
+    - docker buildx create --use
+    - docker buildx build --load --platform linux/amd64 -t $DOCKER_IMAGE:$CI_COMMIT_BRANCH . || exit 1
+    - echo "$DOCKER_PASSWORD" | docker login -u thismann17 --password-stdin || exit 1
+    - docker push $DOCKER_IMAGE:$CI_COMMIT_BRANCH || exit 1
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"'
+
+# ✅ Deploy Stage
+deploy:
+  stage: deploy
+  needs:
+    - dockerize
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan $ANSIBLE_HOST >> ~/.ssh/known_hosts
+  script:
+    - echo "Deploying application..."
+    - ansible-playbook -i ansible/inventory/hosts.ini -u $ANSIBLE_USER ansible/deploy.yml
+  environment:
+    name: production
+    url: http://$ANSIBLE_HOST
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
