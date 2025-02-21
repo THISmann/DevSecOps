@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx  # Assurez-vous que ce label correspond au label dans le Deployment
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80           # Port du service à l'intérieur du cluster
+      targetPort: 80      # Port du pod sur lequel Nginx écoute
+      nodePort: 30090     # Port exposé sur le nœud (doit être entre 30000-32767)

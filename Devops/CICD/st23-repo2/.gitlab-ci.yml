@@ -4,15 +4,37 @@ stages:
   - dockerize
   - deploy
 
+variables:
+  ANSIBLE_HOST: "10.90.122.235"
+  ANSIBLE_USER: "etienne"
+  DOCKER_IMAGE: "thismann17/st23-repo"
+
+default:
+  tags:
+    - st23-runner
+  cache:
+    key: dependencies
+    paths:
+      - venv/
+    policy: pull-push
+
+# ✅ Build Stage
 build:
   stage: build
   script:
     - echo "Building application..."
-  tags:
-    - st23-runner
+  artifacts:
+    paths:
+      - build_output/
+    expire_in: 1 hour
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"'
 
+# ✅ Test Stage
 test:
   stage: test
+  needs:
+    - build
   script:
     - echo "Running tests..."
     - python3 -m venv venv || exit 1
@@ -22,33 +44,41 @@ test:
   artifacts:
     paths:
       - tests/
-  tags:
-    - st23-runner
+    expire_in: 1 hour
+  dependencies:
+    - build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"'
 
+# ✅ Dockerize Stage
 dockerize:
   stage: dockerize
+  needs:
+    - test
   script:
     - echo "Building Docker image..."
     - docker buildx create --use
-    - docker buildx build --load --platform linux/amd64 -t thismann17/st23-repo . || exit 1
+    - docker buildx build --load --platform linux/amd64 -t $DOCKER_IMAGE:$CI_COMMIT_BRANCH . || exit 1
     - echo "$DOCKER_PASSWORD" | docker login -u thismann17 --password-stdin || exit 1
-    - docker push thismann17/st23-repo || exit 1
-  tags:
-    - st23-runner
+    - docker push $DOCKER_IMAGE:$CI_COMMIT_BRANCH || exit 1
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"'
 
-
+# ✅ Deploy Stage
 deploy:
   stage: deploy
+  needs:
+    - dockerize
   before_script:
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan 10.90.122.235 >> ~/.ssh/known_hosts
+    - ssh-keyscan $ANSIBLE_HOST >> ~/.ssh/known_hosts
   script:
     - echo "Deploying application..."
-    - sshpass -p "INNOfuh#" ssh etienne@10.90.122.235 "docker pull thismann17/st23-repo"
-    - sshpass -p "INNOfuh#" ssh etienne@10.90.122.235 "docker stop st23-app || true"
-    - sshpass -p "INNOfuh#" ssh etienne@10.90.122.235 "docker rm st23-app || true"
-    - sshpass -p "INNOfuh#" ssh etienne@10.90.122.235 "docker run -d -p 5000:5000 --name st23-app thismann17/st23-repo"
-  tags:
-    - st23-runner
+    - ansible-playbook -i ansible/inventory/hosts.ini -u $ANSIBLE_USER ansible/deploy.yml
+  environment:
+    name: production
+    url: http://$ANSIBLE_HOST
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'

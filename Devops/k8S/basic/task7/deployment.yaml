@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx-app
+spec:
+  replicas: 3  # Déployer 3 instances du pod
+  selector:
+    matchLabels:
+      app: nginx-app  # S'assure que le Deployment gère les bons pods
+  template:
+    metadata:
+      labels:
+        app: nginx-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - apt update && apt install -y iputils-ping net-tools && nginx -g 'daemon off;';
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "600m"
+        ports:
+          - containerPort: 60
+        env:
+        - name: APP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: my-secret
+              key: username
+        - name: APP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: my-secret
+              key: password
+        envFrom:
+        - configMapRef:
+            name: my-app-config
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: my-app-config-json

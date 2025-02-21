@@ -1,0 +1,5 @@
+{
+    "log_level": "info",
+    "max_connections": 100
+  }
+  
